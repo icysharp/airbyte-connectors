@@ -5,13 +5,23 @@
     "title": "Shopify Partner API Airbyte source Spec",
     "type": "object",
     "required": [
+      "OrganizationID",
       "X-Shopify-Access-Token"
     ],
     "additionalProperties": false,
     "properties": {
+      "OrganizationID": {
+        "type": "string",
+        "title": "Your organization ID. You can find this in the URL of the Partners Dashboard when you’re logged in.",
+        "examples": [
+          "1234567",
+          "https://partners.shopify.com/**{OrganizationID}**/api/2021-04/graphql.json"
+        ],
+        "airbyte_secret": true
+      },
       "X-Shopify-Access-Token": {
         "type": "string",
-        "title": "Shopify Partner API (X-Shopify-Access-Token)",
+        "title": "A Partner API client access token. The API client access token must belong to the organization that you're querying. You can create a new API client for your organization through the Partner Dashboard",
         "examples": [
           "prtapi_xxxxxxxxxxxxxxxxxxxxxxx"
         ],

@@ -9,6 +9,8 @@ import {
 } from 'faros-airbyte-cdk';
 import VError from 'verror';
 
+import {Shopify, ShopifyConfig} from './shopify/shopify';
+
 /** The main entry point. */
 export function mainCommand(): Command {
   const logger = new AirbyteLogger();
@@ -23,15 +25,20 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
   }
 
   async checkConnection(config: AirbyteConfig): Promise<[boolean, VError]> {
-    if (config.XShopifyAccessToken) {
-      return [true, undefined];
+    const organizationId = config['OrganizationID'];
+    const accessToken = config['X-Shopify-Access-Token'];
+
+    const shopifyConfig: ShopifyConfig = {
+      organizationId,
+      accessToken,
+    };
+
+    try {
+      const shopify = Shopify.instance(shopifyConfig, this.logger);
+      await shopify.checkConnection();
+    } catch (e: any) {
+      return [false, e];
     }
-    return [
-      false,
-      new VError(
-        'Please provide a valid API Token for the Shopify Partner API (X-Shopify-Access-Token)'
-      ),
-    ];
   }
 
   streams(config: AirbyteConfig): AirbyteStreamBase[] {
