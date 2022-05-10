@@ -48,12 +48,13 @@ export class Shopify {
       config.organizationId,
       config.organizationId
     );
+    return Shopify.shopify;
   }
 
   async checkConnection(): Promise<void> {
     try {
       await this.graphClient.request(`{
-        transactions {
+        transactions(first: 1) {
           edges {
               cursor,
               node {

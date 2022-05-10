@@ -36,6 +36,7 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
     try {
       const shopify = Shopify.instance(shopifyConfig, this.logger);
       await shopify.checkConnection();
+      return [true, undefined];
     } catch (e: any) {
       return [false, e];
     }
