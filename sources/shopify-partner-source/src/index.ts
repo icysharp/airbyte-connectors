@@ -10,7 +10,7 @@ import {
 import VError from 'verror';
 
 import {Shopify, ShopifyConfig} from './shopify/shopify';
-import {Builds} from './streams';
+import {Builds, Transactions} from './streams';
 
 /** The main entry point. */
 export function mainCommand(): Command {
@@ -44,6 +44,6 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
   }
 
   streams(config: AirbyteConfig): AirbyteStreamBase[] {
-    return [new Builds(this.logger)];
+    return [new Builds(this.logger), new Transactions(this.logger)];
   }
 }

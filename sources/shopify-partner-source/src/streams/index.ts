@@ -1,3 +1,4 @@
 import {Builds} from './builds';
+import {Transactions} from './transactions';
 
-export {Builds};
+export {Builds, Transactions};
