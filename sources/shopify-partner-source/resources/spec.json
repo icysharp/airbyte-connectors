@@ -6,7 +6,7 @@
     "type": "object",
     "required": [
       "OrganizationID",
-      "X-Shopify-Access-Token"
+      "ShopifyAccessToken"
     ],
     "additionalProperties": false,
     "properties": {
@@ -19,9 +19,9 @@
         ],
         "airbyte_secret": true
       },
-      "X-Shopify-Access-Token": {
+      "ShopifyAccessToken": {
         "type": "string",
-        "title": "A Partner API client access token. The API client access token must belong to the organization that you're querying. You can create a new API client for your organization through the Partner Dashboard",
+        "title": "A Shopify Partner API client access token. The API client access token must belong to the organization that you're querying. You can create a new API client for your organization through the Partner Dashboard",
         "examples": [
           "prtapi_xxxxxxxxxxxxxxxxxxxxxxx"
         ],

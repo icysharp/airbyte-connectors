@@ -24,8 +24,8 @@
     "fix": "prettier --write 'src/**/*.ts' 'test/**/*.ts' && npm run lint -- --fix",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "prepare": "npm run build",
-    "test": "npx jest --verbose --color",
-    "test-cov": "npx jest --coverage --verbose --color",
+    "test": "jest --verbose --color",
+    "test-cov": "jest --coverage --verbose --color",
     "watch": "tsc -b -w src test"
   },
   "dependencies": {

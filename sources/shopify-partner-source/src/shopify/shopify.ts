@@ -1,6 +1,6 @@
 // import axios from 'axios';
 import {AirbyteLogger, wrapApiError} from 'faros-airbyte-cdk';
-import {GraphQLClient} from 'graphql-request';
+import {ClientError,GraphQLClient} from 'graphql-request';
 import {VError} from 'verror';
 
 const GRAPHQL_API_URL = (orgId: string): string =>
@@ -64,11 +64,9 @@ export class Shopify {
           }
         }`);
     } catch (err: any) {
-      let errorMessage = 'Please verify your token is correct. Error: ';
-      if (err.error_code || err.error_info) {
-        errorMessage += `${err.error_code}: ${err.error_info}`;
-        throw new VError(errorMessage);
-      }
+      const clientError = err as ClientError;
+      const errorMessage = `Please verify your configuration! \n Error: ${clientError.message} `;
+      throw new VError(errorMessage);
     }
   }
 }

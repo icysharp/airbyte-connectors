@@ -10,6 +10,7 @@ import {
 import VError from 'verror';
 
 import {Shopify, ShopifyConfig} from './shopify/shopify';
+import {Builds} from './streams';
 
 /** The main entry point. */
 export function mainCommand(): Command {
@@ -26,7 +27,7 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
 
   async checkConnection(config: AirbyteConfig): Promise<[boolean, VError]> {
     const organizationId = config['OrganizationID'];
-    const accessToken = config['X-Shopify-Access-Token'];
+    const accessToken = config['ShopifyAccessToken'];
 
     const shopifyConfig: ShopifyConfig = {
       organizationId,
@@ -43,7 +44,6 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
   }
 
   streams(config: AirbyteConfig): AirbyteStreamBase[] {
-    // return [new Builds(this.logger)];
-    return;
+    return [new Builds(this.logger)];
   }
 }
