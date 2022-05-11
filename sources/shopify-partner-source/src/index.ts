@@ -9,7 +9,7 @@ import {
 } from 'faros-airbyte-cdk';
 import VError from 'verror';
 
-import {Shopify, ShopifyConfig} from './shopify/shopify';
+import {Shopify} from './shopify/shopify';
 import {Builds, Transactions} from './streams';
 
 /** The main entry point. */
@@ -26,16 +26,8 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
   }
 
   async checkConnection(config: AirbyteConfig): Promise<[boolean, VError]> {
-    const organizationId = config['OrganizationID'];
-    const accessToken = config['ShopifyAccessToken'];
-
-    const shopifyConfig: ShopifyConfig = {
-      organizationId,
-      accessToken,
-    };
-
     try {
-      const shopify = Shopify.instance(shopifyConfig, this.logger);
+      const shopify = Shopify.instance(config, this.logger);
       await shopify.checkConnection();
       return [true, undefined];
     } catch (e: any) {
@@ -44,6 +36,7 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
   }
 
   streams(config: AirbyteConfig): AirbyteStreamBase[] {
-    return [new Builds(this.logger), new Transactions(this.logger)];
+    const shopify = Shopify.instance(config, this.logger);
+    return [new Builds(this.logger), new Transactions(shopify, this.logger)];
   }
 }

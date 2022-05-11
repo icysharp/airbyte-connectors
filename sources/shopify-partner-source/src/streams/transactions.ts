@@ -1,7 +1,21 @@
-import {AirbyteStreamBase, StreamKey, SyncMode} from 'faros-airbyte-cdk';
+import {
+  AirbyteLogger,
+  AirbyteStreamBase,
+  StreamKey,
+  SyncMode,
+} from 'faros-airbyte-cdk';
 import {Dictionary} from 'ts-essentials';
 
+import {Shopify} from '../shopify/shopify';
+
 export class Transactions extends AirbyteStreamBase {
+  constructor(
+    private readonly shopify: Shopify,
+    protected readonly logger: AirbyteLogger
+  ) {
+    super(logger);
+  }
+
   getJsonSchema(): Dictionary<any, string> {
     const jsonSchema = require('../../resources/schemas/transactions.json');
     this.logger.debug(
@@ -29,10 +43,8 @@ export class Transactions extends AirbyteStreamBase {
       );
       return;
     }
-    const numTxns = 5;
-    for (let i = 1; i <= numTxns; i++) {
-      yield this.newTransaction(i, lastCutoff);
-    }
+
+    yield* this.shopify.fetchTransactions();
   }
 
   getUpdatedState(
@@ -42,16 +54,8 @@ export class Transactions extends AirbyteStreamBase {
     return {
       cutoff: Math.max(
         currentStreamState.cutoff ?? 0,
-        latestRecord.updated_at ?? 0
+        latestRecord.createdAt ?? 0
       ),
-    };
-  }
-
-  private newTransaction(uid: number, cutoff: number): Dictionary<any> {
-    return {
-      id: `gid://partners${uid.toString()}`,
-      createdAt: `2022-01-${uid}`,
-      __typename: 'Txn',
     };
   }
 }

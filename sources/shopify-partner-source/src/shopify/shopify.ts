@@ -1,6 +1,7 @@
 // import axios from 'axios';
-import {AirbyteLogger, wrapApiError} from 'faros-airbyte-cdk';
-import {ClientError,GraphQLClient} from 'graphql-request';
+import {AirbyteConfig, AirbyteLog, AirbyteLogger} from 'faros-airbyte-cdk';
+import {ClientError, GraphQLClient} from 'graphql-request';
+import {Dictionary} from 'ts-essentials';
 import {VError} from 'verror';
 
 const GRAPHQL_API_URL = (orgId: string): string =>
@@ -16,39 +17,60 @@ export class Shopify {
 
   constructor(
     private readonly graphClient: GraphQLClient,
-    private organizationId: string,
-    private accessToken: string
+    private readonly organizationId: string,
+    private readonly accessToken: string,
+    private readonly logger: AirbyteLogger
   ) {}
 
-  static instance(config: ShopifyConfig, logger: AirbyteLogger): Shopify {
+  static instance(config: AirbyteConfig, logger: AirbyteLogger): Shopify {
     if (Shopify.shopify) return Shopify.shopify;
 
-    let message: string = null;
-    if (!config.organizationId) {
-      message =
-        'Please provide a valid Organization ID for the Shopify Partner API';
-      logger.warn(`${message} | ${config.organizationId}`);
-      throw new VError(message);
-    }
-    if (!config.accessToken) {
-      message =
-        'Please provide a valid API Token for the Shopify Partner API (X-Shopify-Access-Token)';
-      logger.warn(`${message} | ${config.accessToken}`);
-      throw new VError(message);
-    }
+    const shopifyConfig: ShopifyConfig = Shopify.getShopifyConfig(config);
+    Shopify.validateConfig(shopifyConfig, logger);
 
     const graphClient = new GraphQLClient(
-      `${GRAPHQL_API_URL(config.organizationId)}`,
+      `${GRAPHQL_API_URL(shopifyConfig.organizationId)}`,
       {
-        headers: {'X-Shopify-Access-Token': config.accessToken},
+        headers: {'X-Shopify-Access-Token': shopifyConfig.accessToken},
       }
     );
     Shopify.shopify = new Shopify(
       graphClient,
-      config.organizationId,
-      config.organizationId
+      shopifyConfig.organizationId,
+      shopifyConfig.accessToken,
+      logger
     );
     return Shopify.shopify;
+  }
+
+  static getShopifyConfig(config: AirbyteConfig): ShopifyConfig {
+    const organizationId = config['OrganizationID'];
+    const accessToken = config['ShopifyAccessToken'];
+
+    const shopifyConfig: ShopifyConfig = {
+      organizationId,
+      accessToken,
+    };
+    return shopifyConfig;
+  }
+
+  private static validateConfig(
+    shopifyConfig: ShopifyConfig,
+    logger: AirbyteLogger
+  ): void {
+    let message: string = null;
+    if (!shopifyConfig.organizationId) {
+      message =
+        'Please provide a valid Organization ID for the Shopify Partner API';
+      logger.warn(`${message} | ${shopifyConfig.organizationId}`);
+      throw new VError(message);
+    }
+    if (!shopifyConfig.accessToken) {
+      message =
+        'Please provide a valid API Token for the Shopify Partner API (X-Shopify-Access-Token)';
+      logger.warn(`${message} | ${shopifyConfig.accessToken}`);
+      throw new VError(message);
+    }
   }
 
   async checkConnection(): Promise<void> {
@@ -64,9 +86,45 @@ export class Shopify {
           }
         }`);
     } catch (err: any) {
+      this.logger.info(
+        `GraphQL endpoint : ${GRAPHQL_API_URL(this.organizationId)}`
+      );
+      this.logger.debug(`Access Token : ${this.accessToken}`);
       const clientError = err as ClientError;
-      const errorMessage = `Please verify your configuration! \n Error: ${clientError.message} `;
+      const errorMessage = `Please verify your Shopify Partner API Source configuration! \n Error: ${clientError.message} `;
       throw new VError(errorMessage);
     }
+  }
+
+  async *fetchTransactions(): AsyncGenerator<any, void, unknown> {
+    try {
+      const data = await this.graphClient.request(`{
+        transactions {
+          edges {
+              cursor,
+              node {
+                id
+                createdAt
+                __typename
+              },
+            },
+          }
+        }`);
+      for (const txn of data.transactions.edges) {
+        yield this.newTransaction(txn);
+      }
+    } catch (err: any) {
+      const clientError = err as ClientError;
+      const errorMessage = `Please verify your Shopify Partner API Source configuration! \n Error: ${clientError.message} `;
+      throw new VError(errorMessage);
+    }
+  }
+
+  private newTransaction(edge: Dictionary<any>): Dictionary<any> {
+    return {
+      id: edge.node.id,
+      createdAt: edge.node.createdAt,
+      __typename: edge.node.__typename,
+    };
   }
 }

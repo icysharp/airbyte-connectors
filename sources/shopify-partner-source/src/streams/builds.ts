@@ -4,14 +4,13 @@ import {Dictionary} from 'ts-essentials';
 export class Builds extends AirbyteStreamBase {
   getJsonSchema(): Dictionary<any, string> {
     const jsonSchema = require('../../resources/schemas/builds.json');
-    this.logger.debug(
-      `getJsonSchema ->  ${JSON.stringify(jsonSchema, null, 2)}`
-    );
     return jsonSchema;
   }
+
   get primaryKey(): StreamKey {
     return ['uid', 'source'];
   }
+
   get cursorField(): string | string[] {
     return 'updated_at';
   }
