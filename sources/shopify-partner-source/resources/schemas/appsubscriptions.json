@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "billingInterval": {
+      "type": "string"
+    },
+    "chargeId": {
+      "type": "string"
+    },
+    "grossAmount": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type":"string"
+        }
+      }
+    },
+    "netAmount": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type":"string"
+        }
+      }
+    },
+    "shopifyFee": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type":"string"
+        }
+      }
+    }
+  }
+}

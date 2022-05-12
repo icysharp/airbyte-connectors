@@ -10,7 +10,7 @@ import {
 import VError from 'verror';
 
 import {Shopify} from './shopify/shopify';
-import {Builds, Transactions} from './streams';
+import {AppSubscriptionSaleEvents,Transactions} from './streams';
 
 /** The main entry point. */
 export function mainCommand(): Command {
@@ -37,6 +37,9 @@ export class ShopifyPartnerAPISource extends AirbyteSourceBase {
 
   streams(config: AirbyteConfig): AirbyteStreamBase[] {
     const shopify = Shopify.instance(config, this.logger);
-    return [new Builds(this.logger), new Transactions(shopify, this.logger)];
+    return [
+      new AppSubscriptionSaleEvents(shopify, this.logger),
+      new Transactions(shopify, this.logger),
+    ];
   }
 }

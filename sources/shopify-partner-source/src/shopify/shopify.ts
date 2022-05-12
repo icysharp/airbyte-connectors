@@ -127,4 +127,65 @@ export class Shopify {
       __typename: edge.node.__typename,
     };
   }
+
+  async *fetchAppSubscriptionSaleEvents(): AsyncGenerator<any, void, unknown> {
+    try {
+      const data = await this.graphClient.request(`
+      {
+        transactions(types: [APP_SUBSCRIPTION_SALE]) {
+          edges {
+            node {
+              id
+              createdAt
+              ... on AppSubscriptionSale {
+                billingInterval 
+                chargeId
+                createdAt
+                grossAmount {
+                  amount
+                  currencyCode
+                }
+                netAmount {
+                  amount
+                  currencyCode
+                }
+                shopifyFee {
+                  amount
+                  currencyCode
+                }
+                shop {
+                  id
+                  name
+                  avatarUrl
+                  myshopifyDomain
+                }
+              }
+            }
+          }
+        }
+      }
+        `);
+      for (const txn of data.transactions.edges) {
+        this.logger.debug(JSON.stringify(txn, null, 4));
+        yield txn;
+        // yield this.newAppSubscriptionSaleEvents(txn);
+      }
+    } catch (err: any) {
+      const clientError = err as ClientError;
+      const errorMessage = `Please verify your Shopify Partner API Source configuration! \n Error: ${clientError.message} `;
+      throw new VError(errorMessage);
+    }
+  }
+
+  private newAppSubscriptionSaleEvents(edge: Dictionary<any>): Dictionary<any> {
+    return {
+      billingInterval: edge.billingInterval,
+      chargeId: edge.chargeId,
+      createdAt: edge.createdAt,
+      grossAmount: edge.grossAmount,
+      netAmount: edge.netAmount,
+      shopifyFee: edge.shopifyFee,
+      // shop: edge.shop,
+    };
+  }
 }
