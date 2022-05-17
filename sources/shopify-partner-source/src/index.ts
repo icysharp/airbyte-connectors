@@ -2,6 +2,7 @@ import {Command} from 'commander';
 import {
   AirbyteConfig,
   AirbyteLogger,
+  AirbyteLogLevel,
   AirbyteSourceBase,
   AirbyteSourceRunner,
   AirbyteSpec,
@@ -10,11 +11,11 @@ import {
 import VError from 'verror';
 
 import {Shopify} from './shopify/shopify';
-import {AppSubscriptionSaleEvents,Transactions} from './streams';
+import {AppSubscriptionSaleEvents, Transactions} from './streams';
 
 /** The main entry point. */
 export function mainCommand(): Command {
-  const logger = new AirbyteLogger();
+  const logger = new AirbyteLogger(AirbyteLogLevel.DEBUG);
   const source = new ShopifyPartnerAPISource(logger);
   return new AirbyteSourceRunner(logger, source).mainCommand();
 }

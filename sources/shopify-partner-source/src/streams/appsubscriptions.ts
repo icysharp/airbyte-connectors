@@ -44,7 +44,7 @@ export class AppSubscriptionSaleEvents extends AirbyteStreamBase {
       return;
     }
 
-    yield* this.shopify.fetchAppSubscriptionSaleEvents();
+    yield* this.shopify.fetchAppSubscriptionSaleTxns();
   }
 
   getUpdatedState(

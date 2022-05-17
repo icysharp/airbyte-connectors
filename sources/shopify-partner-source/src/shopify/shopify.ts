@@ -4,7 +4,7 @@ import {ClientError, GraphQLClient} from 'graphql-request';
 import {Dictionary} from 'ts-essentials';
 import {VError} from 'verror';
 
-const GRAPHQL_API_URL = (orgId: string): string =>
+const getGraphApiUrl = (orgId: string): string =>
   `https://partners.shopify.com/${orgId}/api/2022-01/graphql.json`;
 
 export interface ShopifyConfig {
@@ -29,7 +29,7 @@ export class Shopify {
     Shopify.validateConfig(shopifyConfig, logger);
 
     const graphClient = new GraphQLClient(
-      `${GRAPHQL_API_URL(shopifyConfig.organizationId)}`,
+      `${getGraphApiUrl(shopifyConfig.organizationId)}`,
       {
         headers: {'X-Shopify-Access-Token': shopifyConfig.accessToken},
       }
@@ -87,7 +87,7 @@ export class Shopify {
         }`);
     } catch (err: any) {
       this.logger.info(
-        `GraphQL endpoint : ${GRAPHQL_API_URL(this.organizationId)}`
+        `GraphQL endpoint : ${getGraphApiUrl(this.organizationId)}`
       );
       this.logger.debug(`Access Token : ${this.accessToken}`);
       const clientError = err as ClientError;
@@ -128,7 +128,7 @@ export class Shopify {
     };
   }
 
-  async *fetchAppSubscriptionSaleEvents(): AsyncGenerator<any, void, unknown> {
+  async *fetchAppSubscriptionSaleTxns(): AsyncGenerator<any, void, unknown> {
     try {
       const data = await this.graphClient.request(`
       {
@@ -167,8 +167,7 @@ export class Shopify {
         `);
       for (const txn of data.transactions.edges) {
         this.logger.debug(JSON.stringify(txn, null, 4));
-        yield txn;
-        // yield this.newAppSubscriptionSaleEvents(txn);
+        yield this.newAppSubscriptionSaleEvents(txn);
       }
     } catch (err: any) {
       const clientError = err as ClientError;
@@ -177,15 +176,18 @@ export class Shopify {
     }
   }
 
-  private newAppSubscriptionSaleEvents(edge: Dictionary<any>): Dictionary<any> {
+  private newAppSubscriptionSaleEvents({
+    node,
+  }: Dictionary<any>): Dictionary<any> {
     return {
-      billingInterval: edge.billingInterval,
-      chargeId: edge.chargeId,
-      createdAt: edge.createdAt,
-      grossAmount: edge.grossAmount,
-      netAmount: edge.netAmount,
-      shopifyFee: edge.shopifyFee,
-      // shop: edge.shop,
+      id: node.id,
+      createdAt: node.createdAt,
+      billingInterval: node.billingInterval,
+      chargeId: node.chargeId,
+      grossAmount: node.grossAmount,
+      netAmount: node.netAmount,
+      shopifyFee: node.shopifyFee,
+      shop: node.shop,
     };
   }
 }

@@ -46,6 +46,23 @@
           "type":"string"
         }
       }
+    },
+    "shop": {
+      "type": "object",
+      "properties": {
+        "id" :{
+         "type":"string" 
+        },
+        "name" :{
+         "type":"string" 
+        },
+        "avatarUrl" :{
+         "type":"string" 
+        },
+        "myshopifyDomain" :{
+         "type":"string" 
+        }
+      }
     }
   }
 }
